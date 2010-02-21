@@ -1,4 +1,5 @@
 #summary Step-by-step instructions for get the adapter running.
+#labels Featured,Phase-Deploy
 = Installation =
 
 == 1. Download and install libecap Library ==
