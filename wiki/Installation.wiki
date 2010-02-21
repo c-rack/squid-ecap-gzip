@@ -23,12 +23,12 @@ make install
 
   * Download and unpack latest VIGOS eCAP GZIP adapter from here
 {{{
-wget http://squid-ecap-gzip.googlecode.com/files/vigos-ecap-gzip-adapter-1.1.0.tar.gz
-tar xvfz vigos-ecap-gzip-adapter-1.1.0.tar.gz
+wget http://squid-ecap-gzip.googlecode.com/files/squid-ecap-gzip-1.2.0.tar.gz
+tar xvfz squid-ecap-gzip-1.2.0.tar.gz
 }}}
   * Build and install VIGOS eCAP GZIP adapter:
 {{{
-cd vigos-ecap-gzip-adapter-1.1.0/
+cd squid-ecap-gzip/
 ./configure
 make
 make install
