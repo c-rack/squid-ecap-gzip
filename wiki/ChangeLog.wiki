@@ -1,5 +1,5 @@
 #summary Listing changes between versions.
-#labels Phase-Support
+#labels Phase-Support,Featured
 
 = Change Log =
 
