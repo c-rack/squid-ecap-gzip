@@ -1,0 +1,195 @@
+dnl generally useful C++ checks 
+
+AC_LANG([C++])
+
+dnl save pre-set values (if any) for variables that are
+dnl created by autoconf
+PRESET_CXXFLAGS="$CXXFLAGS"
+PRESET_LDFLAGS="$LDFLAGS"
+
+dnl check for programs
+AC_PROG_CXX
+
+# change default extention for source files
+ac_ext=cc
+
+dnl check for optional features
+AC_SUBST(std_include)
+AC_ARG_ENABLE(std-include,
+	[ --enable-std-include=DIR Where to find standard C++ headers ],
+	[
+		std_include=`echo -I$enableval | sed 's/:/ -I/g'`
+		CPPFLAGS="$CPPFLAGS $std_include"
+	],
+	[ std_include='' ]
+)
+
+
+dnl check if alleged C++ compiler understands C++
+AC_MSG_CHECKING(whether the C++ compiler ($CXX) is a C++ compiler)
+AC_TRY_COMPILE([
+	#define Concat(a,b) a ## b
+	struct T { 
+		virtual ~T();
+		virtual int m() const = 0;
+		mutable bool a;
+	};
+
+	template <class P>
+	struct C: public P {
+		C(int): c(0) {}
+		int m() const;
+		int c;
+	};
+
+	template <class P>
+	int C<P>::m() const { Concat(re,turn) c; }
+
+	inline int test_inline() { return 0; }
+],[
+	// this is main()'s body
+	static C<T> ct(1);
+	return 0;
+],[
+	AC_MSG_RESULT(yes)
+],[
+	AC_MSG_RESULT(no)
+	AC_MSG_ERROR(the compiler ($CXX) failed to pass a simple C++ test; check config.log for details)
+])
+
+
+dnl check if compiler can find C++ headers
+AC_CHECK_HEADER(iostream.h, [],
+	AC_MSG_WARN([
+		Failure to find iostream.h indicates
+		a compiler installation problem; You 
+		may want to use --enable-std-include 
+		option to help your compiler to find
+		directories with C++ include files.])
+)
+
+dnl adjust program options
+
+OLD_CXXFLAGS=$CXXFLAGS
+if test -z "$PRESET_CXXFLAGS"
+then
+	if test "x$GXX" = xyes
+	then [
+		# reset to preferred options
+		# replace -O? with -O3
+		CXXFLAGS=`echo $CXXFLAGS | sed 's/-O[0-9]*/-O3/'`;
+		# enable useful warnings
+		CXXFLAGS="$CXXFLAGS -Wall -Wwrite-strings -Woverloaded-virtual"
+		# avoid disk I/O
+		CXXFLAGS="$CXXFLAGS -pipe"
+
+		# custom host-dependent tuning
+		case "$host" in
+		alpha-dec-osf4.*)
+			# we get random coredumps with g++ -O
+			echo deleting -On on $host
+			CXXFLAGS=`echo $CXXFLAGS | sed -e 's/-O[0-9]* *//'`
+			;;
+		*-linux-*)
+			# -O2,3 seems to produce coredumps on RH and MDK linux
+			echo enforcing -O1 on $host
+			CXXFLAGS=`echo $CXXFLAGS | sed -e 's/-O[0-9]* */-O1 /'`
+			;;
+		esac
+	] fi
+fi
+
+if test "x$PRESET_CXXFLAGS" != "x$CXXFLAGS"
+then
+	AC_MSG_CHECKING(whether custom $CXX flags work)
+	AC_TRY_COMPILE(
+		[
+		],[
+			return 0;
+		],[
+			AC_MSG_RESULT(probably)
+			echo "changing $CXX flags to $CXXFLAGS"
+		],[
+			AC_MSG_RESULT(no)
+			CXXFLAGS=$OLD_CXXFLAGS
+			echo "leaving  $CXX flags at $CXXFLAGS"
+		]
+	)
+fi
+
+AC_CACHE_CHECK(for ios::fmtflags, ac_cv_have_type_iosfmtflags, [
+	AC_TRY_COMPILE([
+		#include <iostream.h>
+	],[
+		ios::fmtflags flags;
+		return sizeof(flags) == 0;
+	],[
+		ac_cv_have_type_iosfmtflags="yes"
+	],[
+		ac_cv_have_type_iosfmtflags="no"
+	])
+])
+if test "x$ac_cv_have_type_iosfmtflags" = xyes ; then
+  AC_DEFINE(HAVE_TYPE_IOSFMTFLAGS, 1, "ios::fmtflags type")
+fi
+
+
+dnl keep this check in sync with sstream.h
+AC_CACHE_CHECK(for sstream::freeze, ac_cv_have_sstreamfreeze, [
+	AC_TRY_COMPILE([
+#if defined(HAVE_SSTREAM)
+#   include <sstream>
+#else
+#	if defined(HAVE_STRSTREAM_H)
+#		include <strstream.h>
+#	elif defined(HAVE_STRSTREA_H) /* MS file name limit */
+#		include <strstrea.h>
+#	endif
+
+#	include <string>
+
+	class istringstream: public istrstream {
+		public:
+			istringstream(const string &buf):
+				istrstream(buf.data(), buf.size()) {}
+	};
+
+	class ostringstream: public ostrstream {
+		public:
+			string str() const { return string(((ostrstream*)this)->str()); }
+	};
+#endif
+	],[
+		ostringstream os;
+		os.freeze(false);
+		return sizeof(os) == 0;
+	],[
+		ac_cv_have_sstreamfreeze="yes"
+	],[
+		ac_cv_have_sstreamfreeze="no"
+	])
+])
+if test "x$ac_cv_have_sstreamfreeze" = xyes ; then
+  AC_DEFINE(HAVE_SSTREAMFREEZE, 1, "sstream.freeze member function")
+fi
+
+
+dnl check wether set_new_handler() is present
+AC_CACHE_CHECK(for set_new_handler, ac_cv_have_set_new_handler, [
+	AC_TRY_RUN([
+			#include <new>
+			static void myHandler() {}
+			int main() {
+				set_new_handler(&myHandler);
+				return 0;
+			}
+		],
+		ac_cv_have_set_new_handler="yes",
+		ac_cv_have_set_new_handler="no",
+		ac_cv_have_set_new_handler="no",
+	)
+])
+if test "x$ac_cv_have_set_new_handler" = xyes ; then
+  AC_DEFINE(HAVE_SET_NEW_HANDLER, 1, "set_new_handler function")
+fi
+

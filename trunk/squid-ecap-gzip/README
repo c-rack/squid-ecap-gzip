@@ -1,0 +1,18 @@
+This Software is an eCAP adapter for HTTP compression with GZIP.
+
+The adapter is installed in /usr/local/lib/ by default.
+
+The libecap library is required to build and use these adapters. You can get
+the library from http://www.e-cap.org/. The adapter can be built and
+installed from source, usually by running:
+
+    % ./configure
+    % make
+    % make install
+
+For eCAP documentation, the libecap library implementation, and support
+information, please visit the eCAP project web site: http://www.e-cap.org/
+
+For eCAP GZIP adapter documentation and support, please visit:
+http://www.vigos.com/
+
