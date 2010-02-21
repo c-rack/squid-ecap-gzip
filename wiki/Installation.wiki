@@ -64,4 +64,4 @@ acl GZIP_HTTP_STATUS http_status 200
 adaptation_access gzip_service allow GZIP_HTTP_STATUS
 }}}
 
-Now, after (re-)starting SQUID, all text/html responses from clients sending the Accept-encoding: gzip HTTP header will be compressed.
+Now, after (re-)starting SQUID, all `text/html` responses from clients sending the `Accept-encoding: gzip` HTTP header will be compressed.
