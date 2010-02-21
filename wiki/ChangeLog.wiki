@@ -3,6 +3,12 @@
 
 = Change Log =
 
+
+== 1.2.0 (2010-02-21) ==
+[http://squid-ecap-gzip.googlecode.com/files/squid-ecap-gzip-1.2.0.tar.gz squid-ecap-gzip-1.2.0.tar.gz]
+
+  * FIX: Do not call libecap::adapter::Service::start() to avoid assertion error.
+
 == 1.1.0 (2009-07-04) ==
 [http://squid-ecap-gzip.googlecode.com/files/vigos-ecap-gzip-adapter-1.1.0.tar.gz vigos-ecap-gzip-adapter-1.1.0.tar.gz]
 
