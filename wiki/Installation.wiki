@@ -23,7 +23,7 @@ make install
 
   * Download and unpack latest VIGOS eCAP GZIP adapter from here
 {{{
-wget http://www.vigos.com/products/eCAP/vigos-ecap-gzip-adapter-1.1.0.tar.gz
+wget http://squid-ecap-gzip.googlecode.com/files/vigos-ecap-gzip-adapter-1.1.0.tar.gz
 tar xvfz vigos-ecap-gzip-adapter-1.1.0.tar.gz
 }}}
   * Build and install VIGOS eCAP GZIP adapter:
@@ -36,11 +36,12 @@ make install
 
 == 3. Download and install SQUID proxy cache, version 3.1+ ==
 
+*Important:*
 The eCAP feature is only available in SQUID version 3.1 or higher. You cannot use the VIGOS eCAP GZIP adapter with earlier versions of SQUID (e.g. 2.6, 2.7, 3.0).
 
   * Download and unpack latest SQUID version from http://www.squid-cache.org/Versions/v3/3.1/
 {{{
-wget http://www.squid-cache.org/Versions/v3/3.1/squid-3.1.0.9.tar.gz
+wget http://www.squid-cache.org/Versions/v3/3.1/squid-3.1.0.16.tar.gz
 tar xvfz squid-3.1.0.9.tar.gz
 }}}
   * Configure, build and install SQUID:
