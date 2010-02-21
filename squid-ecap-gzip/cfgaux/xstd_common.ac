@@ -1,0 +1,26 @@
+dnl generally useful checks
+
+dnl general stuff used by other checks
+dnl AC_CANONICAL_HOST
+AC_DEFINE_UNQUOTED(CONFIG_HOST_TYPE, "$host", "build environment")
+
+dnl check for programs
+AC_PROG_INSTALL
+
+dnl these should be removed since they are not needed for libtool projects
+AC_PROG_RANLIB
+AC_PATH_PROG(AR, ar, ar)
+AR_R="$AR r"
+AC_SUBST(AR_R)
+
+if test -z "$prefix" -o "$prefix" = "NONE"
+then
+	install_prefix="${ac_default_prefix}"
+else
+	install_prefix="${prefix}"
+fi
+echo "remembering installation prefix as $install_prefix"
+AC_DEFINE_UNQUOTED(INSTALL_PREFIX, "$install_prefix", "installation prefix")
+
+
+AC_PROG_MAKE_SET

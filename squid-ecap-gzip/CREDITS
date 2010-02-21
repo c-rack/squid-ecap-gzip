@@ -1,0 +1,12 @@
+This file contains informal information about people and companies that
+contributed to this software. For formal statements affecting copyright
+ownership and licensing, please see LICENSE and NOTICE files.
+
+- Alex Rousskov and The Measurement Factory
+  http://www.measurement-factory.com/
+  2008/04- Design, implementation, maintenance.
+
+- Constantin Rack and VIGOS AG
+  http://www.vigos.com/
+  2008/12- Implementation and maintenance of GZIP adapter
+

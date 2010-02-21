@@ -1,0 +1,76 @@
+#                                               -*- Autoconf -*-
+#  @configure_input@
+#
+#  Configuration scipt for eCAP Library
+#
+# Process this file with autoconf to produce a configure script.
+
+AC_INIT(eCAP GZIP Adapter, 1.0.0, [], ecap_gzip_adapter)
+AC_CONFIG_AUX_DIR(cfgaux)
+AC_CONFIG_SRCDIR([src/sample.h])
+AC_CONFIG_HEADERS(src/autoconf.h)
+
+AM_INIT_AUTOMAKE([nostdinc])
+AM_MAINTAINER_MODE
+
+AC_ENABLE_SHARED
+AC_LIBTOOL_TAGS([CXX])
+AC_PROG_LIBTOOL
+
+m4_include(cfgaux/xstd_common.ac)
+m4_include(cfgaux/xstd_cpp_checks.ac)
+
+# Checks for programs.
+AC_PROG_CXX
+AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AC_PROG_RANLIB
+
+
+# Checks for libraries.
+
+dnl check for libecap
+dnl AX_CXX_CHECK_LIB([ecap], [eCAP::Host::RegisterService(Service * = 0)])
+AC_CHECK_LIB([ecap], [main],
+    [LIBS="-lecap $LIBS"],
+    [AC_MSG_FAILURE([libecap is not found or unusable])]
+)
+
+dnl AC_CACHE_CHECK([for libecap], ac_lib_ecap,
+dnl [
+dnl 	saved_LIBS=$LIBS
+dnl 	LIBS="-lecap $LIBS"
+dnl 	AC_LINK_IFELSE([
+dnl 		AC_LANG_PROGRAM([[
+dnl 			int main() {
+dnl 				Host::RegisterService(0);
+dnl 				return 0;
+dnl 			}
+dnl 		]])],
+dnl 		[AS_VAR_SET(ac_lib_ecap, yes)],
+dnl 		[AS_VAR_SET(ac_lib_ecap, no)]
+dnl 	)
+dnl ])	
+dnl 
+dnl AS_IF([test AS_VAR_GET(ac_lib_ecap) = yes],
+dnl 	[LIBS="-lecap $LIBS"],
+dnl 	[AC_MSG_FAILURE(libecap library missing or invalid)]
+dnl )
+
+# Checks for header files.
+AC_CHECK_HEADERS([libecap/adapter/service.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+# AC_HEADER_STDBOOL
+# AC_C_CONST
+
+# Checks for library functions.
+
+AC_CONFIG_FILES([\
+        ./Makefile \
+        src/Makefile \
+])
+AC_OUTPUT

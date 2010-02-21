@@ -1,0 +1,16 @@
+
+Version 1.0.0 (2008-12-30)
+
+* First public version.
+
+
+Version 1.1.0 (2009-07-04)
+
+* FIX: Do not compress if response has a Content-Encoding header.
+* FIX: Do not compress if response has a Content-Range header.
+* FIX: Do not compress if response forbids compression due to "Cache-Control: no-transform" header
+* FIX: Add warning header according to RFC 2616
+* FIX: Remove ETag header on compressed response
+* FIX: Remove Content-Location header on compressed response
+* FIX: Several minor bug fixes
+
