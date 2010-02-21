@@ -229,7 +229,7 @@ std::string Adapter::Service::tag() const {
 }
 
 void Adapter::Service::describe(std::ostream &os) const {
-	os << "A passthru adapter from " << PACKAGE_NAME << " v" << PACKAGE_VERSION;
+	os << "HTTP compression / GZIP eCAP adapter";
 }
 
 void Adapter::Service::configure(const Config &) {
@@ -241,7 +241,7 @@ void Adapter::Service::reconfigure(const Config &) {
 }
 
 void Adapter::Service::start() {
-	libecap::adapter::Service::start();
+	// libecap::adapter::Service::start();
 	// custom code would go here, but this service does not have one
 }
 
