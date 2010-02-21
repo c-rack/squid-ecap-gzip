@@ -1,5 +1,4 @@
-#summary One-sentence summary of this page.
-
+#summary Step-by-step instructions for get the adapter running.
 = Installation =
 
 == 1. Download and install libecap Library ==
