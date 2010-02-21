@@ -14,3 +14,7 @@ Version 1.1.0 (2009-07-04)
 * FIX: Remove Content-Location header on compressed response
 * FIX: Several minor bug fixes
 
+
+Version 1.2.0 (2010-02-21)
+
+* FIX: Do not call libecap::adapter::Service::start() from Adapter::Service::start, as it throws assertion error.
