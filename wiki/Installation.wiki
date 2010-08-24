@@ -41,12 +41,12 @@ The eCAP feature is only available in SQUID version 3.1 or higher. You cannot us
 
   * Download and unpack latest SQUID version from http://www.squid-cache.org/Versions/v3/3.1/
 {{{
-wget http://www.squid-cache.org/Versions/v3/3.1/squid-3.1.6.tar.gz
-tar xvfz squid-3.1.6.tar.gz
+wget http://www.squid-cache.org/Versions/v3/3.1/squid-3.1.7.tar.gz
+tar xvfz squid-3.1.7.tar.gz
 }}}
   * Configure, build and install SQUID:
 {{{
-cd squid-3.1.6/
+cd squid-3.1.7/
 ./configure --enable-ecap
 make
 make install
