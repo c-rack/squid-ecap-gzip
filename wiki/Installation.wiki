@@ -4,15 +4,15 @@
 
 == 1. Download and install libecap Library ==
 
-  * Download and unpack latest libecap library from: http://www.e-cap.org/Downloads (or use [http://squid-ecap-gzip.googlecode.com/files/libecap-0.0.2.tar.gz local mirror of version 0.0.2])
+  * Download and unpack latest libecap library from: http://www.e-cap.org/Downloads (or use [http://squid-ecap-gzip.googlecode.com/files/libecap-0.0.3.tar.gz local mirror of version 0.0.3])
 {{{
-wget http://www.measurement-factory.com/tmp/ecap/libecap-0.0.2.tar.gz
-tar xvfz libecap-0.0.2.tar.gz
+wget http://www.measurement-factory.com/tmp/ecap/libecap-0.0.3.tar.gz
+tar xvfz libecap-0.0.3.tar.gz
 }}}
 
   * Build and install libecap library:
 {{{
-cd libecap-0.0.2/
+cd libecap-0.0.3/
 ./configure
 make
 make install
