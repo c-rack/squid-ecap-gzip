@@ -1,6 +1,6 @@
 /*
  *	VIGOS eCAP GZIP Adapter
- *	Copyright (C) 2008-2009 Constantin Rack, VIGOS AG, Germany.
+ *	Copyright (C) 2008-2011 Constantin Rack, VIGOS AG, Germany.
  *
  *	http://www.vigos.com/
  * 
@@ -229,7 +229,7 @@ std::string Adapter::Service::tag() const {
 }
 
 void Adapter::Service::describe(std::ostream &os) const {
-	os << "HTTP compression / GZIP eCAP adapter";
+	os << "HTTP GZIP compression eCAP adapter";
 }
 
 void Adapter::Service::configure(const Config &) {
@@ -473,7 +473,13 @@ void Adapter::Xaction::abStopMaking()
 
 libecap::Area Adapter::Xaction::abContent(size_type offset, size_type size)
 {
-	Must(sendingAb == opOn);
+	// required to not raise an exception on the final call with opComplete
+	Must(sendingAb == opOn || sendingAb == opComplete);
+
+	// if complete, there is nothing more to return.
+	if (sendingAb == opComplete) {
+		return libecap::Area::FromTempString("");
+	}
 
 	offset = gzipContext->sendingOffset + offset;
 	size = gzipContext->compressedSize - offset;
@@ -525,7 +531,7 @@ void Adapter::Xaction::noteVbContentDone(bool atEnd)
 	gzipContext->gzipBuffer[gzipContext->compressedSize++] = (char) gzipContext->originalSize & 0xff;
 	
 	Must(receivingVb == opOn);
-	receivingVb == opComplete;
+	receivingVb = opComplete;
 	
 	if (sendingAb == opOn) {
 		hostx->noteAbContentDone(atEnd);
