@@ -1,0 +1,3 @@
+For years, there has been a huge demand for a HTTP compression feature of the popular SQUID proxy cache. With SQUID 3.1, the eCAP feature was introduced to support third-party modules for content adaption, which was earlier performed by the ICAP protocol. VIGOS, a Germany-based software company specialised on Web content delivery, is now proud of offering the first eCAP adapter providing GZIP content-encoding / HTTP compression for SQUID.
+
+See [Installation](Installation.md) for instructions how to get it running.
