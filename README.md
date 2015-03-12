@@ -16,3 +16,9 @@ information, please visit the eCAP project web site: http://www.e-cap.org/
 For eCAP GZIP adapter documentation and support, please visit:
 http://code.google.com/p/squid-ecap-gzip/
 
+This product includes software developed by
+   The Measurement Factory (http://www.measurement-factory.com/).
+
+This product includes AX_CXX_CHECK_LIB software developed by
+   Guiodo Draheim <guidod@gmx.de>
+
