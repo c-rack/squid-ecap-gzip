@@ -1,0 +1,13 @@
+Makefile
+config.log
+config.status
+libtool
+src/.deps/
+src/.libs/
+src/Makefile
+src/adapter_gzip.lo
+src/adapter_gzip.o
+src/autoconf.h
+src/ecap_adapter_gzip.la
+src/stamp-h1
+
