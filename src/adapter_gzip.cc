@@ -38,9 +38,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <iostream>
-#include <libecap/common/message.h>
 #include <libecap/common/registry.h>
 #include <libecap/common/errors.h>
+#include <libecap/common/message.h>
 #include <libecap/common/header.h>
 #include <libecap/common/names.h>
 #include <libecap/adapter/service.h>
@@ -50,11 +50,9 @@
 
 namespace Adapter { // not required, but adds clarity
 	
-	using libecap::size_type;
-	using libecap::StatusLine;
-	
-	class Service: public libecap::adapter::Service {
+using libecap::size_type;
 		
+class Service: public libecap::adapter::Service {
 	public:
 		// About
 		virtual std::string uri() const; // unique across all vendors
@@ -62,8 +60,8 @@ namespace Adapter { // not required, but adds clarity
 		virtual void describe(std::ostream &os) const; // free-format info
 		
 		// Configuration
-		virtual void configure(const Config &cfg);
-		virtual void reconfigure(const Config &cfg);
+		virtual void configure(const libecap::Options &cfg);
+		virtual void reconfigure(const libecap::Options &cfg);
 		
 		// Lifecycle
 		virtual void start(); // expect makeXaction() calls
@@ -74,15 +72,20 @@ namespace Adapter { // not required, but adds clarity
 		virtual bool wantsUrl(const char *url) const;
 		
 		// Work
-		virtual libecap::adapter::Xaction *makeXaction(libecap::host::Xaction *hostx);
-	};
+		virtual Adapter::Service::MadeXactionPointer makeXaction(libecap::host::Xaction *hostx);
 	
+};
 	
-	class Xaction: public libecap::adapter::Xaction {
+
+class Xaction: public libecap::adapter::Xaction {
 	public:
-		Xaction(libecap::host::Xaction *x);
+		Xaction(libecap::shared_ptr<Service> s, libecap::host::Xaction *x);
 		virtual ~Xaction();
 		
+		// meta-information for the host transaction
+		virtual const libecap::Area option(const libecap::Name &name) const;
+		virtual void visitEachOption(libecap::NamedValueVisitor &visitor) const;
+
 		// lifecycle
 		virtual void start();
 		virtual void stop();
@@ -101,13 +104,12 @@ namespace Adapter { // not required, but adds clarity
         virtual void noteVbContentDone(bool atEnd);
         virtual void noteVbContentAvailable();
 		
-		// libecap::Callable API, via libecap::host::Xaction
-		virtual bool callable() const;
-		
 	protected:
+		void stopVb(); // stops receiving vb (if we are receiving it)
 		libecap::host::Xaction *lastHostCall(); // clears hostx
 		
 	private:
+		libecap::shared_ptr<const Service> service; // configuration access
 		libecap::host::Xaction *hostx; // Host transaction rep
 		
 		typedef enum { opUndecided, opOn, opComplete, opNever } OperationState;
@@ -137,7 +139,10 @@ namespace Adapter { // not required, but adds clarity
 		} requirements;
 		
 		bool requirementsAreMet();
-	};
+};
+
+static const std::string CfgErrorPrefix =
+	"Modifying Adapter: configuration error: ";
 	
 } // namespace Adapter
 
@@ -168,7 +173,6 @@ bool Adapter::Xaction::requirementsAreMet() {
 	
 	return true;
 }
-
 
 /**
  * Initializes the zlib data structures.
@@ -217,9 +221,7 @@ void Adapter::Xaction::gzipFinalize() {
 	}
 }
 
-/**
- * Returns the URI of the VIGOS gzip eCAP service.
- */
+
 std::string Adapter::Service::uri() const {
 	return "ecap://www.vigos.com/ecap_gzip";
 }
@@ -232,16 +234,16 @@ void Adapter::Service::describe(std::ostream &os) const {
 	os << "HTTP GZIP compression eCAP adapter";
 }
 
-void Adapter::Service::configure(const Config &) {
+void Adapter::Service::configure(const libecap::Options &cfg) {
 	// this service is not configurable
 }
 
-void Adapter::Service::reconfigure(const Config &) {
+void Adapter::Service::reconfigure(const libecap::Options &cfg) {
 	// this service is not configurable
 }
 
 void Adapter::Service::start() {
-	// libecap::adapter::Service::start();
+	//libecap::adapter::Service::start();
 	// custom code would go here, but this service does not have one
 }
 
@@ -259,13 +261,17 @@ bool Adapter::Service::wantsUrl(const char *url) const {
 	return true; // no-op is applied to all messages
 }
 
-libecap::adapter::Xaction *Adapter::Service::makeXaction(libecap::host::Xaction *hostx) {
-	return new Adapter::Xaction(hostx);
+Adapter::Service::MadeXactionPointer Adapter::Service::makeXaction(libecap::host::Xaction *hostx) {
+	return Service::MadeXactionPointer(new Adapter::Xaction(std::tr1::static_pointer_cast<Service>(self),
+		hostx));
 }
 
 
-Adapter::Xaction::Xaction(libecap::host::Xaction *x): hostx(x),
-receivingVb(opUndecided), sendingAb(opUndecided) {
+Adapter::Xaction::Xaction(libecap::shared_ptr<Service> aService,
+	libecap::host::Xaction *x):
+	service(aService),
+	hostx(x),
+	receivingVb(opUndecided), sendingAb(opUndecided) {
 }
 
 Adapter::Xaction::~Xaction() {
@@ -275,17 +281,30 @@ Adapter::Xaction::~Xaction() {
 	}
 }
 
+const libecap::Area Adapter::Xaction::option(const libecap::Name &) const {
+	return libecap::Area(); // this transaction has no meta-information
+}
+
+void Adapter::Xaction::visitEachOption(libecap::NamedValueVisitor &) const {
+	// this transaction has no meta-information to pass to the visitor
+}
+
 void Adapter::Xaction::start() {
+
 	gzipContext = 0;
 
 	Must(hostx);
+
 	if (hostx->virgin().body()) {
 		receivingVb = opOn;
 		hostx->vbMake(); // ask host to supply virgin body
 	} else {
+		// we are not interested in vb if there is not one
 		receivingVb = opNever;
 	}
 	
+	/* adapt message header */
+
 	libecap::shared_ptr<libecap::Message> adapted = hostx->virgin().clone();
     Must(adapted != 0);
 
@@ -313,7 +332,6 @@ void Adapter::Xaction::start() {
 		}
 	}
 	
-	
 	/**
 	 * Checks if the response Cache-Control header allows transformation of the response.
 	 */
@@ -333,7 +351,6 @@ void Adapter::Xaction::start() {
 			}
 		}
 	}
-
 
 	/**
 	 * Do not compress if response has a content-range header and status code "206 Partial content". 
@@ -369,7 +386,6 @@ void Adapter::Xaction::start() {
 		}
 	}
 
-
 	/**
 	 * Checks the Content-Encoding response header.
 	 * If this header is present, we must not compress the respone.
@@ -384,16 +400,16 @@ void Adapter::Xaction::start() {
 		this->requirements.responseContentTypeOk = false;
 	}
 
-	
 	// delete ContentLength header because we may change the length
 	// unknown length may have performance implications for the host
 	adapted->header().removeAny(libecap::headerContentLength);
 
-	// Add informational response header	
+	// add a custom header
 	static const libecap::Name name("X-Ecap");
 	const libecap::Header::Value value = libecap::Area::FromTempString("VIGOS eCAP GZIP Adapter");
 	adapted->header().add(name, value);
 	
+
 	// Add "Vary: Accept-Encoding" response header if Content-Type is "text/html"
 	if(requirements.responseContentTypeOk) {
 		static const libecap::Name varyName("Vary");
@@ -442,8 +458,9 @@ void Adapter::Xaction::stop() {
 void Adapter::Xaction::abDiscard()
 {
 	Must(sendingAb == opUndecided); // have not started yet
-	
 	sendingAb = opNever;
+	// we do not need more vb if the host is not interested in ab
+	stopVb();
 }
 
 void Adapter::Xaction::abMake()
@@ -467,13 +484,12 @@ void Adapter::Xaction::abMakeMore()
 void Adapter::Xaction::abStopMaking()
 {
 	sendingAb = opComplete;
-	// we may still continue receiving
+	// we do not need more vb if the host is not interested in more ab
+	stopVb();
 }
 
 
-libecap::Area Adapter::Xaction::abContent(size_type offset, size_type size)
-{
-	// required to not raise an exception on the final call with opComplete
+libecap::Area Adapter::Xaction::abContent(size_type offset, size_type size) {
 	Must(sendingAb == opOn || sendingAb == opComplete);
 
 	// if complete, there is nothing more to return.
@@ -487,17 +503,15 @@ libecap::Area Adapter::Xaction::abContent(size_type offset, size_type size)
 	return libecap::Area::FromTempBuffer((const char*)&gzipContext->gzipBuffer[offset], size);
 }
 
-
-void Adapter::Xaction::abContentShift(size_type size)
-{
-	Must(sendingAb == opOn);
+void Adapter::Xaction::abContentShift(size_type size) {
+	Must(sendingAb == opOn || sendingAb == opComplete);
 	gzipContext->sendingOffset += size;
 	hostx->vbContentShift(gzipContext->lastChunkSize);
 }
 
-
 void Adapter::Xaction::noteVbContentDone(bool atEnd)
 {
+
 	Must(gzipContext);
 	
 	gzipContext->zstream.total_out = 0;
@@ -530,9 +544,9 @@ void Adapter::Xaction::noteVbContentDone(bool atEnd)
 	gzipContext->originalSize >>= 8;
 	gzipContext->gzipBuffer[gzipContext->compressedSize++] = (char) gzipContext->originalSize & 0xff;
 	
+
 	Must(receivingVb == opOn);
 	receivingVb = opComplete;
-	
 	if (sendingAb == opOn) {
 		hostx->noteAbContentDone(atEnd);
 		sendingAb = opComplete;
@@ -546,8 +560,7 @@ void Adapter::Xaction::noteVbContentAvailable()
 	Must(receivingVb == opOn);
 	Must(gzipContext);
 
-	// get all virgin body
-	const libecap::Area vb = hostx->vbContent(0, libecap::nsize);
+        const libecap::Area vb = hostx->vbContent(0, libecap::nsize); // get all vb
 	
 	// calculate original byte size for GZIP footer
 	gzipContext->originalSize += vb.size;
@@ -588,15 +601,20 @@ void Adapter::Xaction::noteVbContentAvailable()
 	
 	gzipContext->compressedSize += gzipContext->zstream.total_out;
 	
-	if(sendingAb == opOn)
-	{
+	if (sendingAb == opOn)
 		hostx->noteAbContentAvailable();
-	}
 }
 
-
-bool Adapter::Xaction::callable() const {
-    return hostx != 0; // no point to call us if we are done
+// tells the host that we are not interested in [more] vb
+// if the host does not know that already
+void Adapter::Xaction::stopVb() {
+	if (receivingVb == opOn) {
+		hostx->vbStopMaking();
+		receivingVb = opComplete;
+	} else {
+		// we already got the entire body or refused it earlier
+		Must(receivingVb != opUndecided);
+	}
 }
 
 // this method is used to make the last call to hostx transaction
@@ -610,6 +628,6 @@ libecap::host::Xaction *Adapter::Xaction::lastHostCall() {
 }
 
 // create the adapter and register with libecap to reach the host application
-static const bool Registered = (libecap::RegisterService(new Adapter::Service), true);
+static const bool Registered = (libecap::RegisterVersionedService(new Adapter::Service));
 
 
