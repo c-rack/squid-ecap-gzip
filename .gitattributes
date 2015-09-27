@@ -1,0 +1,7 @@
+Makefile*     linguist-vendored
+src/Makefile* linguist-vendored
+ac*           linguist-vendored
+cfgaux/*      linguist-vendored
+configure*    linguist-vendored
+bootstrap.sh  linguist-vendored
+
