@@ -1,6 +1,6 @@
 /*
  *  VIGOS eCAP GZIP Adapter
- *  Copyright (C) 2008-2015 Constantin Rack, VIGOS AG, Germany.
+ *  Copyright (C) 2008-2016 Constantin Rack, VIGOS AG, Germany.
  *
  *  http://www.vigos.com/
  *
