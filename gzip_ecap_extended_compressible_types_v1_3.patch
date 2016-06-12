@@ -1,0 +1,50 @@
+--- src/adapter_gzip.cc		Sun Jun 12 20:32:35 2016
++++ src/adapter_gzip.cc		Sun Jun 12 20:34:01 2016
+@@ -367,7 +367,6 @@
+ 
+ 	/**
+ 	 * Checks the Content-Type response header.
+-	 * At this time, only responses with "text/html" content-type are allowed to be compressed.
+ 	 */
+ 	static const libecap::Name contentTypeName("Content-Type");
+ 	
+@@ -376,13 +375,29 @@
+ 
+ 	if(adapted->header().hasAny(contentTypeName)) {
+ 		const libecap::Header::Value contentType = adapted->header().value(contentTypeName);
++
++		std::string contentTypeType; // store contenttype str
++		std::string contentTypeType2; // store contenttype substr
+ 		
+ 		if(contentType.size > 0) {
+ 			std::string contentTypeString = contentType.toString(); // expensive
+ 			
+-			if(strstr(contentTypeString.c_str(),"text/html")) {
++			contentTypeType2 = contentTypeString.substr(0,4);			
++			if(strstr(contentTypeType2.c_str(),"text")) {
+ 				this->requirements.responseContentTypeOk = true;
+ 			}
++			else if(strstr(contentTypeType.c_str(),"application/xml")) {
++				this->requirements.responseContentTypeOk = true; 
++			}
++			else if(strstr(contentTypeType.c_str(),"application/javascript")) {
++				this->requirements.responseContentTypeOk = true;
++			}
++			else if(strstr(contentTypeType.c_str(),"application/x-javascript")) {
++				this->requirements.responseContentTypeOk = true;
++			}
++			else if(strstr(contentTypeType.c_str(),"application/x-protobuffer")) {
++				this->requirements.responseContentTypeOk = true;
++			}
+ 		}
+ 	}
+ 
+@@ -410,7 +425,7 @@
+ 	adapted->header().add(name, value);
+ 	
+ 
+-	// Add "Vary: Accept-Encoding" response header if Content-Type is "text/html"
++	// Add "Vary: Accept-Encoding" response header if Content-Type is supported type
+ 	if(requirements.responseContentTypeOk) {
+ 		static const libecap::Name varyName("Vary");
+ 		const libecap::Header::Value varyValue = libecap::Area::FromTempString("Accept-Encoding");
