@@ -5,8 +5,6 @@
  	/**
  	 * Checks the Content-Type response header.
 -	 * At this time, only responses with "text/html" content-type are allowed to be compressed.
-+	 * Added more real text types
-+	 * Modified by Y.Voinov (c) 2016
  	 */
  	static const libecap::Name contentTypeName("Content-Type");
  	
