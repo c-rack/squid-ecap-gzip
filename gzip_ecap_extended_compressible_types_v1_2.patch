@@ -44,3 +44,12 @@
  	}
  
  	/**
+@@ -410,7 +428,7 @@
+ 	adapted->header().add(name, value);
+ 	
+ 
+-	// Add "Vary: Accept-Encoding" response header if Content-Type is "text/html"
++	// Add "Vary: Accept-Encoding" response header if Content-Type is supported type
+ 	if(requirements.responseContentTypeOk) {
+ 		static const libecap::Name varyName("Vary");
+ 		const libecap::Header::Value varyValue = libecap::Area::FromTempString("Accept-Encoding");
